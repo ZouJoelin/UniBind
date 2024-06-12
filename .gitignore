@@ -131,3 +131,7 @@ dmypy.json
 /tests_data/
 /output/
 __MACOSX/*
+
+/data
+
+

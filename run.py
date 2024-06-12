@@ -220,12 +220,12 @@ class ProteinLightRunner(object):
         self._pin_memory = pin_memory
 
     def train(self, df_path, data_root, output_dir, col_group='dataset',
-              cols_label=None,
-              max_length=128, n_neighbors=None,
+              cols_label="ddg",max_length=128, n_neighbors=32,
               shuffle=True, cache_dir=None,
               lr=0.001, n_epoch=10, patience=10,
-              model_args={},
+              model_args={},batch_size=8,
               ):
+        self._batch_size = batch_size
         """
         Training
         """

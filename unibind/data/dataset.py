@@ -302,6 +302,6 @@ class UnibindDataset(Dataset):
             case = self.df.iloc[idx]
             paths_wt = case[self.col_wt].split(',')
             paths_mut = case[self.col_mut].split(',')
-            ddg = case[self.col_label]
+            ddg = case[self.cols_label]
             print(case, paths_wt, paths_mut, ddg)
             raise e
