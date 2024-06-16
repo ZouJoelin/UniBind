@@ -68,7 +68,7 @@ class BindFormer(nn.Module):
         wt_atom_feat = atom_norm[1](wt_atom_feat)
         mut_atom_feat = atom_norm[1](mut_atom_feat)
 
-        wt_atom_feat = wt_atom_feat + atom_mlp(wt_atom_feat-mut_atom_feat)
+        wt_atom_feat = wt_atom_feat + atom_mlp(wt_atom_feat-mut_atom_feat)  # reasonable?
         mut_atom_feat = mut_atom_feat + atom_mlp(mut_atom_feat-wt_atom_feat)
         wt_atom_feat = atom_norm[2](wt_atom_feat)
         mut_atom_feat = atom_norm[2](mut_atom_feat)

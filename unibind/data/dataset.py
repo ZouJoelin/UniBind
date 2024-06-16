@@ -91,7 +91,7 @@ def get_knn_dis_index(pos37, mask37, chainid, mutation_mask, chainids, n_neighbo
     if chainids is None:
         contact_dis_mat[chainid[None, :] == chainid[:, None]] = 10000
     else:
-        isin = np.isin(chainid,chainids)
+        isin = np.isin(chainid,chainids)  # all True?
         contact_dis_mat[isin[None, :] == isin[:, None]] = 10000
     contact_dis_min = contact_dis_mat.min(axis=1)
 

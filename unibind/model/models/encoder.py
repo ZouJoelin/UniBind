@@ -13,7 +13,7 @@ def get_neighbors(a, neighbors):
     """
     B, L = a.shape
     a = a[:, :, None].expand(-1, -1, L)
-    result = a.gather(1, neighbors)
+    result = a.gather(1, neighbors)  # axis=1?
     return result
 
 def get_neighbors_z(a, neighbors):
@@ -150,7 +150,7 @@ class ProteinResidueEncoder(nn.Module):
         Returns:
             (N, L, node_ch)
         """
-        chain_knn = get_neighbors(chain, neighbors)
+        chain_knn = get_neighbors(chain, neighbors)  # (N, L, M)
         same_chain = (chain[:, :, None] == chain_knn)   # (N, L, M)
         relpos = (seq[:, :, None] - chain_knn).clamp(min=-self.max_relpos, max=self.max_relpos) + self.max_relpos # (N, L, M)
         relpos = torch.where(same_chain, relpos, torch.full_like(relpos, fill_value=self.max_relpos*2+1))

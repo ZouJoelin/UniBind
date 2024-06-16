@@ -175,7 +175,8 @@ class GeometricEnergyAttention(nn.Module):
             x': Updated node-wise features, (N, L, F).
         """
         # Attention logits
-        z_knn = get_neighbors_z(z, neighbors)
+        # z_knn = get_neighbors_z(z, neighbors)
+        z_knn = z
         logits_node = self._node_logits(x, neighbors)
         logits_pair = self._pair_logits(z_knn)
         logits_spatial = self._beta_logits(R, t, p_CB, neighbors)

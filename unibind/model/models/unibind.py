@@ -50,6 +50,17 @@ class UniBind(nn.Module):
         self.num_classes = output_dim
 
     def forward(self, complex_wt, complex_mut):
+        """"
+        complex:
+        {
+            'aa': (B, L),  # amino acid sequence, L: selected AA length
+            'pos14': (B, L, 14, 3),  # 3D coordinates of 14 atoms
+            'pos14_mask': (B, L, 14),  # mask for 14 atoms
+            'seq': (B, L),  # sequence index, which is already selected out the interface and mutatiuon surrounding
+            'chain_seq': (B, L),  # chain index, all 0 after merge chains
+            'neighbors': (B, L, 32)  # neighbor index
+            }
+        """
         mask_atom_wt = complex_wt['pos14_mask']
         mask_atom_mut = complex_mut['pos14_mask']
         wt_energy = complex_wt.get('res_energy', None)
@@ -59,12 +70,18 @@ class UniBind(nn.Module):
             complex_wt['pos14'], complex_wt['aa'], 
             complex_wt['seq'], complex_wt['chain_seq'], wt_energy,
             mask_atom_wt, complex_wt['neighbors'])
+        # res_feat_wt: (B, L, 224)
+        # res_pair_feat_wt: (B, L, N, 64)
+        # res_pos14_wt: (B, L, 14, 3)
+        # res_t_wt: (B, L, 3)
+        # res_R_wt: (B, L, 3, 3)
         res_feat_mut, res_pair_feat_mut, res_pos14_mut, res_t_mut, res_R_mut = self.res_encoder(
             complex_mut['pos14'], complex_mut['aa'], 
             complex_mut['seq'], complex_mut['chain_seq'], mut_energy,
             mask_atom_mut, complex_mut['neighbors'])
         mask_residue_wt, mask_residue_mut = mask_atom_wt[:, :, ATOM_CA], mask_atom_mut[:, :, ATOM_CA]
         pos_cb_wt, pos_cb_mut = get_pos_CB(res_pos14_wt, mask_atom_wt), get_pos_CB(res_pos14_mut, mask_atom_mut)
+        # pos_cb_wt: (B, L, 3)
         mask_res = mask_atom_wt[:, :, ATOM_CA]
 
         wt = {
@@ -91,6 +108,9 @@ class UniBind(nn.Module):
         }
         if self.twotrack:
             atom_feat_wt, atom_R_wt, atom_t_wt = self.atom_encoder(complex_wt['aa'], complex_wt['pos14'], complex_wt['pos14_mask'])
+            # atom_feat_wt: (B, L, 14, 16)
+            # atom_R_wt: (B, L, 14, 3, 3)
+            # atom_t_wt: (B, L, 14, 3)
             atom_feat_mut, atom_R_mut, atom_t_mut = self.atom_encoder(complex_mut['aa'], complex_mut['pos14'], complex_mut['pos14_mask'])
             wt['atom'] = {
                 'feat': atom_feat_wt,
@@ -102,6 +122,23 @@ class UniBind(nn.Module):
                 'R': atom_R_mut,
                 't': atom_t_mut
             }
+            """
+            wt: {
+            'complex': complex_wt,
+            'res': {
+                'feat': res_feat_wt,  # (B, L, 224) 
+                'pair_feat': res_pair_feat_wt,  # (B, L, N, 64), N: neighbor
+                'R': res_R_wt,  # (B, L, 3, 3)
+                't': res_t_wt,  # (B, L, 3)
+                'mask': mask_residue_wt,
+                'pos_cb': pos_cb_wt,  # (B, L, 3)
+            },
+            'atom': {
+                'feat': atom_feat_wt,  # (B, L, 14, 16)
+                'R': atom_R_wt,  # (B, L, 14, 3, 3)
+                't': atom_t_wt  # (B, L, 14, 3)
+            }
+            """
         for bindformer_block in self.bindformer_blocks:
             if self.twotrack:
                 wt_res_feat, mut_res_feat, wt_atom_feat, mut_atom_feat = bindformer_block(wt, mut)
